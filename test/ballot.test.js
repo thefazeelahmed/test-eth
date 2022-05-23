@@ -7,22 +7,23 @@ const fs = require("fs");
 const ethers = require("ethers");
 const utils = ethers.utils;
 
-let bytecode = fs.readFileSync("./contracts/inbox_sol_Inbox.bin").toString();
+let bytecode = fs.readFileSync("./contracts/ballot_sol_Ballot.bin").toString();
 let abi = JSON.parse(
-  fs.readFileSync("./contracts/inbox_sol_Inbox.abi").toString()
+  fs.readFileSync("./contracts/ballot_sol_Ballot.abi").toString()
 );
 
-let accs, inbox;
+let accs, ballot;
+
 beforeEach(async () => {
   //Get A List of All Accouts
   accs = await web3.eth.getAccounts();
   //Use One Of That Accounts to deploy contracts
-
+  console.log("Test");
   try {
-    inbox = await new web3.eth.Contract(abi)
+    ballot = await new web3.eth.Contract(abi)
       .deploy({
         data: bytecode,
-        arguments: ["test"],
+        arguments: [],
       })
       .send({ from: accs[0], gas: 1000000 });
   } catch (ex) {
@@ -30,20 +31,16 @@ beforeEach(async () => {
   }
 });
 
-describe("inbox", () => {
+describe("ballot", () => {
   it("deploy successfully", () => {
-    assert.ok(inbox.options.address);
+    assert.ok(ballot.options.address);
   });
 
-  it("Check Initial text", async () => {
-    const msg = await inbox.methods.message().call();
-    assert.equal("test", msg);
-  });
+  it("creates candidate", async () => {
+    let newCandidate = await ballot.methods
+      .addCandidate({ candidateAddress: accs[0], name: "Ali", votes: 15 })
+      .call();
 
-  it("Check Updated text", async () => {
-    await inbox.methods.setMessage("polo").send({ from: accs[0] });
-
-    const msg = await inbox.methods.message().call();
-    assert.equal(msg, "polo");
+    assert.equal(newCandidate, 1);
   });
 });
