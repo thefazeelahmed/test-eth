@@ -10,55 +10,56 @@ contract Ballot {
         uint votes;
     }
 
-    struct Vote {
-        address candidateAddress;
-        address voterAddress;
-    }
+    // struct Vote {
+    //     address candidateAddress;
+    //     address voterAddress;
+    // }
 
     struct Voter {
         address voterAddress;
     }
 
-    //mapping(address => uint) public votes;
+    
     Candidate[] public candidates;
 
-    enum State {created,voting,ended}
-
-    State public state;
+    string state;
 
 
     constructor() {
-        Candidate memory cand1 = Candidate({
-            candidateAddress:0x7deF3308aeF9eD686F0C27A60d9e85897b536A1D,
-            name:"",
-            votes:0
-        });
-
-        Candidate memory cand2 = Candidate({
-            candidateAddress:0x7deF3308aeF9eD686F0C27A60d9e85897b536A1D,
-            name:"",
-            votes:2
-        });
-
-        candidates.push(cand1);
-        candidates.push(cand2);
-        startVoting();
+        
     }
 
     function startVoting() public  {
-        state = State.voting;
+        
     }
 
-    function endVoting() public {
-        state = State.ended;
-        
+    function endVoting() public view {
         winnerName();
+    }
+
+    function addCandidate(Candidate memory candidate_) public{
+         candidates.push(candidate_);
+    }
+
+
+    function transferEths(uint _value) public payable{
+        address payable addr = payable(candidates[winningCandidate()].candidateAddress);
+        addr.transfer(_value);
+    }
+
+    function castVote(address candidateAddress) public{
+        for (uint p = 0; p < 2; p++) {
+            if (candidates[p].candidateAddress == candidateAddress) {
+                candidates[p].votes+=1;
+            }
+        }
     }
 
     function winnerName() public view
             returns (string memory winnerName_)
     {
         winnerName_ = candidates[winningCandidate()].name;
+        return winnerName_;
     }
 
 
@@ -70,6 +71,7 @@ contract Ballot {
             if (candidates[p].votes > winningVoteCount) {
                 winningVoteCount = candidates[p].votes;
                 winningProposal_ = p;
+                return p;
             }
         }
     }
