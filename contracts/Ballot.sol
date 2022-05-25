@@ -20,15 +20,29 @@ contract Ballot {
 
     Candidate[] public candidates;
 
-    string state;
+    
+    enum States {pending,voting,ended}
+    States state;
 
     constructor(Candidate[] memory candidates_) {
         for(uint i = 0; i < candidates_.length; i++) {
             candidates.push(candidates_[i]);
         }
+        state = States.pending;
     }
 
-    function startVoting() public {}
+    function startVoting() public {
+        state = States.voting;
+    }
+
+
+    function canVote() public view returns(bool){
+        return state==States.voting;
+    }
+
+    function votingEnded() public view returns(bool){
+        return state==States.ended;
+    }
 
     function endVoting() public view {
         winnerName();
@@ -64,8 +78,14 @@ contract Ballot {
     }
 
     function winnerName() public view returns (string memory winnerName_) {
-        winnerName_ = candidates[winningCandidate()].name;
-        return winnerName_;
+        if(votingEnded()){
+            winnerName_ = candidates[winningCandidate()].name;
+            return winnerName_;
+        }else{
+            winnerName_="Cannot announce winner as voting has not ended yet.";
+            return winnerName_;
+        }
+        
     }
 
     function winningCandidate() public view returns (uint256 winningProposal_) {
