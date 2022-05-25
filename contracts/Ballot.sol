@@ -22,7 +22,11 @@ contract Ballot {
 
     string state;
 
-    constructor() {}
+    constructor(Candidate[] memory candidates_) {
+        for(uint i = 0; i < candidates_.length; i++) {
+            candidates.push(candidates_[i]);
+        }
+    }
 
     function startVoting() public {}
 
@@ -32,11 +36,11 @@ contract Ballot {
 
     function addCandidate(Candidate memory candidate_)
         public
-        returns (uint256 totalCount)
+        returns (Candidate memory temp_)
     {
         candidates.push(candidate_);
-        totalCount = candidates.length;
-        return totalCount;
+        temp_ = candidate_;
+        return temp_;
     }
 
     function countCandidates() public view returns (uint256 totalCount) {
