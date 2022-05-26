@@ -31,8 +31,25 @@ contract Ballot {
         state = States.pending;
     }
 
+
+    function returnError(uint errorType) internal pure returns (string memory errorMsg_){
+        if(errorType == 1){
+            errorMsg_ = "Must Have Two Or More Users ";
+        }
+        if(errorType ==2){
+            errorMsg_="Cannot announce winner as voting has not ended yet.";
+        }
+        return errorMsg_;
+    }
+
     function startVoting() public {
-        state = States.voting;
+        if(countCandidates() >=2){
+            state = States.voting;
+        }
+        else{
+            returnError(1);
+        }
+        
     }
 
 
@@ -40,7 +57,7 @@ contract Ballot {
         return state==States.voting;
     }
 
-    function votingEnded() public view returns(bool){
+    function votingEnded() internal view returns(bool){
         return state==States.ended;
     }
 
@@ -57,6 +74,7 @@ contract Ballot {
         return temp_;
     }
 
+
     function countCandidates() public view returns (uint256 totalCount) {
         totalCount = candidates.length;
         return totalCount;
@@ -64,7 +82,7 @@ contract Ballot {
 
     function transferEths(uint256 _value) public payable {
         address payable addr = payable(
-            candidates[winningCandidate()].candidateAddress
+            candidates[uint256(winningCandidate())].candidateAddress
         );
         addr.transfer(_value);
     }
@@ -79,23 +97,34 @@ contract Ballot {
 
     function winnerName() public view returns (string memory winnerName_) {
         if(votingEnded()){
-            winnerName_ = candidates[winningCandidate()].name;
+            if(winningCandidate() != -1){
+            winnerName_ = candidates[uint(winningCandidate())].name;
             return winnerName_;
+            }
+            else{
+                winnerName_ = returnError(2);
+                return winnerName_;
+            }
         }else{
-            winnerName_="Cannot announce winner as voting has not ended yet.";
+            winnerName_ = returnError(2);
             return winnerName_;
         }
         
     }
 
-    function winningCandidate() public view returns (uint256 winningProposal_) {
+    function winningCandidate() internal view returns (int256 winningProposal_) {
         uint256 winningVoteCount = 0;
-        for (uint256 p = 0; p < 2; p++) {
-            if (candidates[p].votes > winningVoteCount) {
-                winningVoteCount = candidates[p].votes;
-                winningProposal_ = p;
-                return p;
+        winningProposal_ =-1;
+        if(votingEnded()){
+            for (uint256 p = 0; p < 2; p++) {
+                if (candidates[p].votes > winningVoteCount) {
+                    winningVoteCount = candidates[p].votes;
+                    winningProposal_ = int256(p);
+                    return winningProposal_;
+                }
             }
+        }else{
+            return winningProposal_;
         }
     }
 }
