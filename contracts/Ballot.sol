@@ -39,6 +39,9 @@ contract Ballot {
         if(errorType ==2){
             errorMsg_="Cannot announce winner as voting has not ended yet.";
         }
+        if(errorType ==3){
+            errorMsg_="Cannot end voting as it is not started yet";
+        }
         return errorMsg_;
     }
 
@@ -52,7 +55,6 @@ contract Ballot {
         
     }
 
-
     function canVote() public view returns(bool){
         return state==States.voting;
     }
@@ -61,8 +63,13 @@ contract Ballot {
         return state==States.ended;
     }
 
-    function endVoting() public view {
-        winnerName();
+    function endVoting() public {
+        if(state==States.voting){
+            state = States.ended;
+            winnerName();
+        }else{
+            returnError(3);
+        }
     }
 
     function addCandidate(Candidate memory candidate_)
